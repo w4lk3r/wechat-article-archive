@@ -80,45 +80,48 @@ jobs:
       - name: Process Metadata and Update Index
         run: |
           # 1. 遍历 articles 目录下的所有 .md 文件进行 YAML 处理
+          # 使用 find 寻找所有 Markdown 文件
           find articles -name "*.md" | while read file; do
-            # 检查是否已经包含 YAML 头部（防止重复处理）
+            # 检查是否已经包含 YAML 头部（---），防止对同一个文件重复注入
             if ! grep -q "^---" "$file"; then
               echo "正在为 $file 注入 YAML Front Matter..."
               
-              # 提取关键信息
+              # 从文件内容中精准提取元数据
+              # 提取标题：找到 # 开头的行并去掉符号
               TITLE=$(grep "^# " "$file" | head -n 1 | sed 's/^# //')
+              # 提取作者：找到 "> 公众号:" 并去掉前缀
               AUTHOR=$(grep "> 公众号:" "$file" | sed 's/> 公众号: //')
-              DATE=$(grep "> 发布时间:" "$file" | sed 's/> 公众号: //' | sed 's/> 发布时间: //')
+              # 提取日期：找到 "> 发布时间:" 并去掉前缀
+              DATE=$(grep "> 发布时间:" "$file" | sed 's/> 发布时间: //')
+              # 提取链接：找到 "> 原文链接:" 并去掉前缀
               SOURCE=$(grep "> 原文链接:" "$file" | sed 's/> 原文链接: //')
-
-              # 创建临时文件，注入 YAML 头部
-              cat <<EOF > "$file.tmp"
----
-title: "${TITLE}"
-author: "${AUTHOR}"
-date: "${DATE}"
-source: "${SOURCE}"
----
-
-$(cat "$file")
-EOF
+          
+              # 使用 printf 代替 cat <<EOF，避免 YAML 缩进解析错误
+              # %s 会按原样插入变量内容，确保格式安全
+              printf -- "---\ntitle: \"%s\"\nauthor: \"%s\"\ndate: \"%s\"\nsource: \"%s\"\n---\n\n" \
+                "$TITLE" "$AUTHOR" "$DATE" "$SOURCE" > "$file.tmp"
+              
+              # 将原内容追加到新生成的头部后面
+              cat "$file" >> "$file.tmp"
               mv "$file.tmp" "$file"
             fi
           done
 
-          # 2. 重新生成 README.md 索引
+          # 2. 重新生成或更新索引 README.md
           echo "# 微信公众号文章归档库" > README.md
           echo -e "\n本项目通过 GitHub Actions 自动抓取并转换微信文章为 Markdown，方便 AI 阅读。\n" >> README.md
           echo "## 文章列表" >> README.md
           
-          # 查找所有文章并按时间倒序排列（利用文件路径或提取日期）
+          # 查找所有文章并按文件名倒序排列，生成超链接列表
           find articles -name "*.md" | sort -r | while read file; do
-            # 提取 YAML 中的标题
+            # 从处理过的 YAML 头部中重新读取标题和日期
             DISP_TITLE=$(grep "^title: " "$file" | sed 's/title: "//;s/"$//')
-            # 提取日期
             DISP_DATE=$(grep "^date: " "$file" | sed 's/date: "//;s/"$//')
-            # 写入 README
-            echo "- **${DISP_DATE}** | [${DISP_TITLE}](${file})" >> README.md
+            
+            # 如果提取成功，则写入 README 索引
+            if [ -n "$DISP_TITLE" ]; then
+              echo "- **${DISP_DATE}** | [${DISP_TITLE}](${file})" >> README.md
+            fi
           done
 
       - name: Commit and Push
