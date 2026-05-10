@@ -25,18 +25,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # 安装转换工具及其依赖
-          uv pip install wechat-article-to-markdown
-          # 安装 Playwright 的浏览器内核（用于绕过微信检测）
-          uv run playwright install chromium
+          # 加上 --system 告诉 uv 直接安装到 Runner 的全局环境中
+          uv pip install --system wechat-article-to-markdown playwright
+          
+          # 使用 python -m 调用 playwright 确保能正确识别安装路径
+          python -m playwright install chromium
 
       - name: Convert Article
         run: |
-          # 创建存放目录
           mkdir -p articles
-          # 执行转换，指定输出路径和图片保存路径
-          # 注意：这里调用的是 cli 命令，确保路径正确
-          uv run wechat-article-to-markdown "${{ github.event.inputs.article_url }}" --output articles/
+          # 既然已经安装到了全局环境，直接执行即可，不需要 uv run
+          wechat-article-to-markdown "${{ github.event.inputs.article_url }}" --output articles/
 
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
