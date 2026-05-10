@@ -55,13 +55,27 @@ jobs:
 
       - name: Convert Article
         run: |
-          # 确保输出根目录存在
+          # 1. 确保输出根目录存在
           mkdir -p articles
           
           # 执行转换：使用 ${{ github.workspace }} 绝对路径强制纠偏，防止文件落在虚拟环境目录内
           # 工具会自动处理图片本地化，并存放在 articles/文章标题/images 目录下
           uv run wechat-article-to-markdown "${{ github.event.inputs.article_url }}" \
             --output "${{ github.workspace }}/articles"
+
+      - name: Move Results (The "Rescue" Step)
+        run: |
+          # 2. 暴力纠偏：从工具默认的 site-packages/output 目录中把所有东西搬出来
+          # 我们使用通配符 python* 兼容未来可能变化的 Python 版本
+          OUTPUT_PATH=$(find .venv/lib/python*/site-packages/ -name "output" -type d | head -n 1)
+          
+          if [ -d "$OUTPUT_PATH" ] && [ "$(ls -A $OUTPUT_PATH)" ]; then
+            echo "发现隐藏在 $OUTPUT_PATH 的文件，正在搬运..."
+            cp -r $OUTPUT_PATH/* ${{ github.workspace }}/articles/
+            echo "搬运完成！"
+          else
+            echo "未在默认路径发现文件，可能工具已正确保存或路径异常。"
+          fi
 
       - name: Debug Output (Optional)
         run: |
