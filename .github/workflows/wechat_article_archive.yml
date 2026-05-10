@@ -1,0 +1,45 @@
+name: WeChat Article Archive
+
+on:
+  workflow_dispatch:
+    inputs:
+      article_url:
+        description: '微信公众号文章 URL'
+        required: true
+        type: string
+
+permissions:
+  contents: write  # 赋予 Actions 修改仓库内容的权限
+
+jobs:
+  convert_and_archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: |
+          # 安装转换工具及其依赖
+          uv pip install wechat-article-to-markdown
+          # 安装 Playwright 的浏览器内核（用于绕过微信检测）
+          uv run playwright install chromium
+
+      - name: Convert Article
+        run: |
+          # 创建存放目录
+          mkdir -p articles
+          # 执行转换，指定输出路径和图片保存路径
+          # 注意：这里调用的是 cli 命令，确保路径正确
+          uv run wechat-article-to-markdown "${{ github.event.inputs.article_url }}" --output articles/
+
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Archive new article from WeChat"
+          file_pattern: 'articles/*'
