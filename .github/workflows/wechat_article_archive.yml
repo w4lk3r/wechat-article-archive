@@ -8,12 +8,14 @@ on:
         required: true
         type: string
 
+# 必须赋予权限，否则 Action 无法将生成的 Markdown 推送到你的仓库
 permissions:
-  contents: write  # 赋予 Actions 修改仓库内容的权限
+  contents: write
 
 jobs:
   convert_and_archive:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -22,26 +24,55 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
+          enable-cache: true # 开启 uv 自身的依赖缓存
 
-      - name: Install dependencies and Run
+      # 缓存 Camoufox 浏览器内核，避免每次运行都耗时下载（约节省 1-2 分钟）
+      - name: Cache Camoufox Browser
+        id: cache-camoufox
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/camoufox
+          # 根据 OS 环境生成缓存 Key，若需强制刷新可修改此处的版本后缀
+          key: ${{ runner.os }}-camoufox-v1
+          restore-keys: |
+            ${{ runner.os }}-camoufox-
+
+      - name: Install dependencies and Browser
         run: |
-          # 1. 创建虚拟环境 (在当前目录下生成 .venv)
+          # 创建虚拟环境以绕过 Ubuntu 24.04+ 对系统 Python 的 PEP 668 限制
           uv venv
-
-          # 2. 在虚拟环境中安装（不需要 --system，也不怕 PEP 668）
+          
+          # 在虚拟环境中安装转换工具及 Playwright 依赖
           uv pip install wechat-article-to-markdown playwright
-
-          # 3. 安装浏览器内核 (使用 uv run 自动指向 .venv)
-          uv run python -m playwright install chromium
+          
+          # 仅在缓存未命中时下载 Chromium 浏览器
+          if [ "${{ steps.cache-camoufox.outputs.cache-hit }}" != 'true' ]; then
+            echo "Cache miss: Installing Camoufox browser..."
+            uv run python -m playwright install chromium
+          else
+            echo "Cache hit: Skipping browser download."
+          fi
 
       - name: Convert Article
         run: |
+          # 确保输出根目录存在
           mkdir -p articles
-          # 4. 执行转换 (同样使用 uv run)
-          uv run wechat-article-to-markdown "${{ github.event.inputs.article_url }}" --output articles/
+          
+          # 执行转换：使用 ${{ github.workspace }} 绝对路径强制纠偏，防止文件落在虚拟环境目录内
+          # 工具会自动处理图片本地化，并存放在 articles/文章标题/images 目录下
+          uv run wechat-article-to-markdown "${{ github.event.inputs.article_url }}" \
+            --output "${{ github.workspace }}/articles"
+
+      - name: Debug Output (Optional)
+        run: |
+          # 在日志中打印文件树结构，方便排查路径问题
+          ls -R articles/
 
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Archive new article from WeChat"
-          file_pattern: 'articles/*'
+          commit_message: "Archive: New WeChat article"
+          # 捕获 articles 目录下的所有新增文件（含 Markdown 和图片文件夹）
+          file_pattern: 'articles/'
+          # 如果仓库已有同名文件，将进行覆盖更新
+          skip_dirty_check: false
