@@ -23,19 +23,22 @@ jobs:
         with:
           version: "latest"
 
-      - name: Install dependencies
+      - name: Install dependencies and Run
         run: |
-          # 加上 --system 告诉 uv 直接安装到 Runner 的全局环境中
-          uv pip install --system wechat-article-to-markdown playwright
-          
-          # 使用 python -m 调用 playwright 确保能正确识别安装路径
-          python -m playwright install chromium
+          # 1. 创建虚拟环境 (在当前目录下生成 .venv)
+          uv venv
+
+          # 2. 在虚拟环境中安装（不需要 --system，也不怕 PEP 668）
+          uv pip install wechat-article-to-markdown playwright
+
+          # 3. 安装浏览器内核 (使用 uv run 自动指向 .venv)
+          uv run python -m playwright install chromium
 
       - name: Convert Article
         run: |
           mkdir -p articles
-          # 既然已经安装到了全局环境，直接执行即可，不需要 uv run
-          wechat-article-to-markdown "${{ github.event.inputs.article_url }}" --output articles/
+          # 4. 执行转换 (同样使用 uv run)
+          uv run wechat-article-to-markdown "${{ github.event.inputs.article_url }}" --output articles/
 
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
