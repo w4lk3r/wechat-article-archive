@@ -77,16 +77,55 @@ jobs:
             echo "未在默认路径发现文件，可能工具已正确保存或路径异常。"
           fi
 
-      - name: Debug Output (Optional)
+      - name: Process Metadata and Update Index
         run: |
-          # 在日志中打印文件树结构，方便排查路径问题
-          ls -R articles/
+          # 1. 遍历 articles 目录下的所有 .md 文件进行 YAML 处理
+          find articles -name "*.md" | while read file; do
+            # 检查是否已经包含 YAML 头部（防止重复处理）
+            if ! grep -q "^---" "$file"; then
+              echo "正在为 $file 注入 YAML Front Matter..."
+              
+              # 提取关键信息
+              TITLE=$(grep "^# " "$file" | head -n 1 | sed 's/^# //')
+              AUTHOR=$(grep "> 公众号:" "$file" | sed 's/> 公众号: //')
+              DATE=$(grep "> 发布时间:" "$file" | sed 's/> 公众号: //' | sed 's/> 发布时间: //')
+              SOURCE=$(grep "> 原文链接:" "$file" | sed 's/> 原文链接: //')
+
+              # 创建临时文件，注入 YAML 头部
+              cat <<EOF > "$file.tmp"
+---
+title: "${TITLE}"
+author: "${AUTHOR}"
+date: "${DATE}"
+source: "${SOURCE}"
+---
+
+$(cat "$file")
+EOF
+              mv "$file.tmp" "$file"
+            fi
+          done
+
+          # 2. 重新生成 README.md 索引
+          echo "# 微信公众号文章归档库" > README.md
+          echo -e "\n本项目通过 GitHub Actions 自动抓取并转换微信文章为 Markdown，方便 AI 阅读。\n" >> README.md
+          echo "## 文章列表" >> README.md
+          
+          # 查找所有文章并按时间倒序排列（利用文件路径或提取日期）
+          find articles -name "*.md" | sort -r | while read file; do
+            # 提取 YAML 中的标题
+            DISP_TITLE=$(grep "^title: " "$file" | sed 's/title: "//;s/"$//')
+            # 提取日期
+            DISP_DATE=$(grep "^date: " "$file" | sed 's/date: "//;s/"$//')
+            # 写入 README
+            echo "- **${DISP_DATE}** | [${DISP_TITLE}](${file})" >> README.md
+          done
 
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Archive: New WeChat article"
           # 捕获 articles 目录下的所有新增文件（含 Markdown 和图片文件夹）
-          file_pattern: 'articles/'
+          file_pattern: 'articles/ README.md'
           # 如果仓库已有同名文件，将进行覆盖更新
           skip_dirty_check: false
