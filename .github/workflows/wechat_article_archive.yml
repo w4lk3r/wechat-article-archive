@@ -120,18 +120,26 @@ jobs:
           echo -e "\n本项目通过 GitHub Actions 自动抓取并转换微信文章为 Markdown，方便 AI 阅读。\n" >> README.md
           echo "## 文章列表" >> README.md
           
-          # 再次查找所有文章并生成超链接列表
+          # 查找所有文章并生成超链接列表
+          # 使用 find 找到所有 md 文件并按名称排序
           find articles -type f -name "*.md" | sort -r | while read -r file; do
-            # 增强版提取：兼容 title: "标题" 和 title: 标题 两种格式
-            DISP_TITLE=$(grep "^title: " "$file" | sed -E 's/^title: ["]?([^"]*)["]?$/\1/' || true)
-            DISP_DATE=$(grep "^date: " "$file" | sed -E 's/^date: ["]?([^"]*)["]?$/\1/' || true)
+            echo ">>> 正在为索引处理文件: $file"
             
-            if [ -n "$DISP_TITLE" ]; then
-              echo "- **${DISP_DATE:-未分类}** | [${DISP_TITLE}](${file})" >> README.md
+            # 强力提取标题：不区分大小写，去掉 title: 前缀，去掉首尾空格和引号
+            DISP_TITLE=$(grep -i "^title: " "$file" | head -n 1 | sed -E 's/^[Tt]itle:[[:space:]]*//;s/^["]//;s/["]$//' || true)
+            # 强力提取日期：不区分大小写
+            DISP_DATE=$(grep -i "^date: " "$file" | head -n 1 | sed -E 's/^[Dd]ate:[[:space:]]*//;s/^["]//;s/["]$//' || true)
+            
+            # 终极兜底：如果还是没提取到标题，就使用文件名
+            if [ -z "$DISP_TITLE" ]; then
+              DISP_TITLE=$(basename "$file" .md)
             fi
+
+            # 写入 README 索引行
+            echo "- **${DISP_DATE:-未分类}** | [${DISP_TITLE}](${file})" >> README.md
           done
           echo ">>> 索引更新完成。当前 README.md 内容预览："
-          head -n 20 README.md
+          cat README.md
 
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
