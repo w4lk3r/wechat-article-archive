@@ -122,21 +122,24 @@ jobs:
           
           # 再次查找所有文章并生成超链接列表
           find articles -type f -name "*.md" | sort -r | while read -r file; do
-            # 从处理过的 YAML 头部中重新读取标题和日期
-            DISP_TITLE=$(grep "^title: " "$file" | sed 's/title: "//;s/"$//' || true)
-            DISP_DATE=$(grep "^date: " "$file" | sed 's/date: "//;s/"$//' || true)
+            # 增强版提取：兼容 title: "标题" 和 title: 标题 两种格式
+            DISP_TITLE=$(grep "^title: " "$file" | sed -E 's/^title: ["]?([^"]*)["]?$/\1/' || true)
+            DISP_DATE=$(grep "^date: " "$file" | sed -E 's/^date: ["]?([^"]*)["]?$/\1/' || true)
             
             if [ -n "$DISP_TITLE" ]; then
               echo "- **${DISP_DATE:-未分类}** | [${DISP_TITLE}](${file})" >> README.md
             fi
           done
-          echo ">>> 索引更新完成。"
+          echo ">>> 索引更新完成。当前 README.md 内容预览："
+          head -n 20 README.md
 
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Archive: New WeChat article"
-          # 捕获 articles 目录下的所有新增文件（含 Markdown 和图片文件夹）
-          file_pattern: 'articles/ README.md'
+          # 使用多行模式确保路径被正确解析，捕获 articles 目录及根目录 README.md
+          file_pattern: |
+            articles/
+            README.md
           # 如果仓库已有同名文件，将进行覆盖更新
           skip_dirty_check: false
