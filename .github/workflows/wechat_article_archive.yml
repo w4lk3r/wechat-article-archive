@@ -145,9 +145,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Archive: New WeChat article"
-          # 使用多行模式确保路径被正确解析，捕获 articles 目录及根目录 README.md
-          file_pattern: |
-            articles/
-            README.md
-          # 如果仓库已有同名文件，将进行覆盖更新
+          # 捕获 articles 目录下的所有新增文件（含 Markdown 和图片文件夹）
+          file_pattern: 'articles/ README.md'
           skip_dirty_check: false
