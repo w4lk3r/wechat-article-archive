@@ -79,50 +79,58 @@ jobs:
 
       - name: Process Metadata and Update Index
         run: |
+          echo ">>> 正在处理元数据。检查 articles 目录..."
+          mkdir -p articles
+          ls -R articles/
+
           # 1. 遍历 articles 目录下的所有 .md 文件进行 YAML 处理
-          # 使用 find 寻找所有 Markdown 文件
-          find articles -name "*.md" | while read file; do
+          # 使用 find 找到所有 md 文件，并使用 while read 处理带空格的文件名
+          find articles -type f -name "*.md" | while read -r file; do
+            echo ">>> 正在处理文件: $file"
+            
             # 检查是否已经包含 YAML 头部（---），防止对同一个文件重复注入
             if ! grep -q "^---" "$file"; then
-              echo "正在为 $file 注入 YAML Front Matter..."
+              echo ">>> 正在为 $file 注入 YAML Front Matter..."
               
-              # 从文件内容中精准提取元数据
-              # 提取标题：找到 # 开头的行并去掉符号
-              TITLE=$(grep "^# " "$file" | head -n 1 | sed 's/^# //')
-              # 提取作者：找到 "> 公众号:" 并去掉前缀
-              AUTHOR=$(grep "> 公众号:" "$file" | sed 's/> 公众号: //')
-              # 提取日期：找到 "> 发布时间:" 并去掉前缀
-              DATE=$(grep "> 发布时间:" "$file" | sed 's/> 发布时间: //')
-              # 提取链接：找到 "> 原文链接:" 并去掉前缀
-              SOURCE=$(grep "> 原文链接:" "$file" | sed 's/> 原文链接: //')
+              # 从文件内容中提取元数据，增加 || true 防止 grep 失败导致脚本退出
+              TITLE=$(grep "^# " "$file" | head -n 1 | sed 's/^# //' || true)
+              AUTHOR=$(grep "> 公众号:" "$file" | sed 's/> 公众号: //' || true)
+              DATE=$(grep "> 发布时间:" "$file" | sed 's/> 发布时间: //' || true)
+              SOURCE=$(grep "> 原文链接:" "$file" | sed 's/> 原文链接: //' || true)
           
-              # 使用 printf 代替 cat <<EOF，避免 YAML 缩进解析错误
-              # %s 会按原样插入变量内容，确保格式安全
+              # 如果标题为空，则使用文件名作为兜底
+              if [ -z "$TITLE" ]; then
+                TITLE=$(basename "$file" .md)
+              fi
+
+              # 使用 printf 安全生成临时文件
               printf -- "---\ntitle: \"%s\"\nauthor: \"%s\"\ndate: \"%s\"\nsource: \"%s\"\n---\n\n" \
                 "$TITLE" "$AUTHOR" "$DATE" "$SOURCE" > "$file.tmp"
               
               # 将原内容追加到新生成的头部后面
               cat "$file" >> "$file.tmp"
               mv "$file.tmp" "$file"
+              echo ">>> $file 处理完成。"
             fi
           done
 
           # 2. 重新生成或更新索引 README.md
+          echo ">>> 正在更新 README.md 索引..."
           echo "# 微信公众号文章归档库" > README.md
           echo -e "\n本项目通过 GitHub Actions 自动抓取并转换微信文章为 Markdown，方便 AI 阅读。\n" >> README.md
           echo "## 文章列表" >> README.md
           
-          # 查找所有文章并按文件名倒序排列，生成超链接列表
-          find articles -name "*.md" | sort -r | while read file; do
+          # 再次查找所有文章并生成超链接列表
+          find articles -type f -name "*.md" | sort -r | while read -r file; do
             # 从处理过的 YAML 头部中重新读取标题和日期
-            DISP_TITLE=$(grep "^title: " "$file" | sed 's/title: "//;s/"$//')
-            DISP_DATE=$(grep "^date: " "$file" | sed 's/date: "//;s/"$//')
+            DISP_TITLE=$(grep "^title: " "$file" | sed 's/title: "//;s/"$//' || true)
+            DISP_DATE=$(grep "^date: " "$file" | sed 's/date: "//;s/"$//' || true)
             
-            # 如果提取成功，则写入 README 索引
             if [ -n "$DISP_TITLE" ]; then
-              echo "- **${DISP_DATE}** | [${DISP_TITLE}](${file})" >> README.md
+              echo "- **${DISP_DATE:-未分类}** | [${DISP_TITLE}](${file})" >> README.md
             fi
           done
+          echo ">>> 索引更新完成。"
 
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
