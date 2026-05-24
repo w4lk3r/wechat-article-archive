@@ -136,7 +136,7 @@ jobs:
             fi
 
             # 写入 README 索引行
-            echo "- **${DISP_DATE:-未分类}** | [${DISP_TITLE}](${file})" >> README.md
+            echo "- **${DISP_DATE:-未分类}** | [${DISP_TITLE}](<${file}>)" >> README.md
           done
           echo ">>> 索引更新完成。当前 README.md 内容预览："
           cat README.md
