@@ -11,3 +11,4 @@
 - **未分类** | [Flutter 官方 Skills：让你的 AI 写出「专家级别」代码](<articles/Flutter 官方 Skills：让你的 AI 写出「专家级别」代码/Flutter 官方 Skills：让你的 AI 写出「专家级别」代码.md>)
 - **未分类** | [Agent Skill 实战：一个Code Review Skill 的诞生记（上）](<articles/Agent Skill 实战：一个Code Review Skill 的诞生记（上）/Agent Skill 实战：一个Code Review Skill 的诞生记（上）.md>)
 - **未分类** | [Agent Skill 实战：一个 Code Review Skill 的诞生记（下）](<articles/Agent Skill 实战：一个 Code Review Skill 的诞生记（下）/Agent Skill 实战：一个 Code Review Skill 的诞生记（下）.md>)
+- **未分类** | [9.1k Star 的一站式 AI 后端神器：认证、存储、支付、部署，Agent 全包了！](<articles/9.1k Star 的一站式 AI 后端神器：认证、存储、支付、部署，Agent 全包了！/9.1k Star 的一站式 AI 后端神器：认证、存储、支付、部署，Agent 全包了！.md>)
