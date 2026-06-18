@@ -87,11 +87,11 @@ jobs:
           # 使用 find 找到所有 md 文件，并使用 while read 处理带空格的文件名
           find articles -type f -name "*.md" | while read -r file; do
             echo ">>> 正在处理文件: $file"
-            
+
             # 检查是否已经包含 YAML 头部（---），防止对同一个文件重复注入
             if ! grep -q "^---" "$file"; then
               echo ">>> 正在为 $file 注入 YAML Front Matter..."
-              
+
               # 从文件内容中提取元数据，增加 || true 防止 grep 失败导致脚本退出
               TITLE=$(grep "^# " "$file" | head -n 1 | sed 's/^# //' || true)
               AUTHOR=$(grep "> 公众号:" "$file" | sed 's/> 公众号: //' || true)
@@ -106,7 +106,7 @@ jobs:
               # 使用 printf 安全生成临时文件
               printf -- "---\ntitle: \"%s\"\nauthor: \"%s\"\ndate: \"%s\"\nsource: \"%s\"\n---\n\n" \
                 "$TITLE" "$AUTHOR" "$DATE" "$SOURCE" > "$file.tmp"
-              
+
               # 将原内容追加到新生成的头部后面
               cat "$file" >> "$file.tmp"
               mv "$file.tmp" "$file"
@@ -124,12 +124,12 @@ jobs:
           # 使用 find 找到所有 md 文件并按名称排序
           find articles -type f -name "*.md" | sort -r | while read -r file; do
             echo ">>> 正在为索引处理文件: $file"
-            
+
             # 强力提取标题：不区分大小写，去掉 title: 前缀，去掉首尾空格和引号
             DISP_TITLE=$(grep -i "^title: " "$file" | head -n 1 | sed -E 's/^[Tt]itle:[[:space:]]*//;s/^["]//;s/["]$//' || true)
             # 强力提取日期：不区分大小写
             DISP_DATE=$(grep -i "^date: " "$file" | head -n 1 | sed -E 's/^[Dd]ate:[[:space:]]*//;s/^["]//;s/["]$//' || true)
-            
+
             # 终极兜底：如果还是没提取到标题，就使用文件名
             if [ -z "$DISP_TITLE" ]; then
               DISP_TITLE=$(basename "$file" .md)
@@ -146,5 +146,9 @@ jobs:
         with:
           commit_message: "Archive: New WeChat article"
           # 捕获 articles 目录下的所有新增文件（含 Markdown 和图片文件夹）
-          file_pattern: 'articles/ README.md'
+          file_pattern: |
+            articles/**
+            README.md
           skip_dirty_check: false
+          # 显式指定当前分支，防止因环境切换导致 HEAD 分离
+          branch: ${{ github.head_ref || github.ref_name }}
