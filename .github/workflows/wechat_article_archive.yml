@@ -88,8 +88,9 @@ jobs:
           find articles -type f -name "*.md" | while read -r file; do
             echo ">>> 正在处理文件: $file"
 
-            # 检查是否已经包含 YAML 头部（---），防止对同一个文件重复注入
-            if ! grep -q "^---" "$file"; then
+            # 检查文件开头是否已有 YAML Front Matter（以 --- 开头），避免与正文中的水平线混淆
+            FIRST_LINE=$(head -n 1 "$file")
+            if [ "$FIRST_LINE" != "---" ]; then
               echo ">>> 正在为 $file 注入 YAML Front Matter..."
 
               # 从文件内容中提取元数据，增加 || true 防止 grep 失败导致脚本退出
