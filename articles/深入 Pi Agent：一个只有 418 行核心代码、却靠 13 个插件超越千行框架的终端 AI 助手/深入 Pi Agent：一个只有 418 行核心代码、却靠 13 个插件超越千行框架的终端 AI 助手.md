@@ -1,3 +1,10 @@
+---
+title: "深入 Pi Agent：一个只有 418 行核心代码、却靠 13 个插件超越千行框架的终端 AI 助手"
+author: "iwonder6"
+date: "2026-06-15 18:19:28"
+source: "https://mp.weixin.qq.com/s/2cP5rppwUKheJE5ooaJAuw"
+---
+
 # 深入 Pi Agent：一个只有 418 行核心代码、却靠 13 个插件超越千行框架的终端 AI 助手
 
 > 公众号: iwonder6

@@ -1,3 +1,10 @@
+---
+title: "Routa 桌面版发布：内建 Harness 工程的 AI Coding 研发协作工作台"
+author: "phodal"
+date: "2026-04-14 15:51:34"
+source: "https://mp.weixin.qq.com/s/z-rQ19_1qD2Dq9gTm-re5w"
+---
+
 # Routa 桌面版发布：内建 Harness 工程的 AI Coding 研发协作工作台
 
 > 公众号: phodal

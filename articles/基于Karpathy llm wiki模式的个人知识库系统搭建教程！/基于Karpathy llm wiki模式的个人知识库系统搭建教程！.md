@@ -1,3 +1,10 @@
+---
+title: "基于Karpathy llm wiki模式的个人知识库系统搭建教程！"
+author: "OpenClaw 数字打工人"
+date: "2026-04-22 08:51:36"
+source: "https://mp.weixin.qq.com/s/c_O8NBiYa2HgBO8Tnlaj0A"
+---
+
 # 基于Karpathy llm wiki模式的个人知识库系统搭建教程！
 
 > 公众号: OpenClaw 数字打工人

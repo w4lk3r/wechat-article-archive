@@ -1,3 +1,10 @@
+---
+title: "【开源】一个人就是一家视频工厂：告别剪映！这款开源神器，自动生成语音+字幕+背景视频，还带 REST API 和 MCP"
+author: "开源那些事儿"
+date: "2026-03-27 11:30"
+source: "https://mp.weixin.qq.com/s/tFTZCwAe-Z1FPK7Uanr88g"
+---
+
 # 【开源】一个人就是一家视频工厂：告别剪映！这款开源神器，自动生成语音+字幕+背景视频，还带 REST API 和 MCP
 
 > 公众号: 开源那些事儿

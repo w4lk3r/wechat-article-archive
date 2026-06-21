@@ -1,3 +1,10 @@
+---
+title: "MemRec — AI记忆持久化系统"
+author: "悠云闲语"
+date: "2026-06-03 19:14:41"
+source: "https://mp.weixin.qq.com/s/UHs_Wh9IMUjDYYGKJp3ahg"
+---
+
 # MemRec — AI记忆持久化系统
 
 > 公众号: 悠云闲语

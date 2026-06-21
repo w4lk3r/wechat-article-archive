@@ -1,3 +1,10 @@
+---
+title: "Karpathy提出LLM Wiki：知识编译范式"
+author: "老白的AI实验室"
+date: "2026-04-08 08:03"
+source: "https://mp.weixin.qq.com/s/u0psQ8wrAE5Uvt5y_sXMNA"
+---
+
 # Karpathy提出LLM Wiki：知识编译范式
 
 > 公众号: 老白的AI实验室

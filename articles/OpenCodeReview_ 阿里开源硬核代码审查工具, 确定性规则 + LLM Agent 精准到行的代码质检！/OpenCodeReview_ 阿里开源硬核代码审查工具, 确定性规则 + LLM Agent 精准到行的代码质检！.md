@@ -1,3 +1,10 @@
+---
+title: "OpenCodeReview: 阿里开源硬核代码审查工具, 确定性规则 + LLM Agent 精准到行的代码质检！"
+author: "AI开源提效指南"
+date: "2026-05-29 17:52:10"
+source: "https://mp.weixin.qq.com/s/TAug9CczSYdxS0d-jD7kIQ"
+---
+
 # OpenCodeReview: 阿里开源硬核代码审查工具, 确定性规则 + LLM Agent 精准到行的代码质检！
 
 > 公众号: AI开源提效指南

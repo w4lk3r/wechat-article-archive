@@ -1,3 +1,10 @@
+---
+title: "清华开源 AI 课堂 OpenMAIC：完整部署与使用指南"
+author: "夏风的屋"
+date: "2026-03-30 09:05"
+source: "https://mp.weixin.qq.com/s/5N09-UcoHm_4iyXN-B_1sw"
+---
+
 # 清华开源 AI 课堂 OpenMAIC：完整部署与使用指南
 
 > 公众号: 夏风的屋

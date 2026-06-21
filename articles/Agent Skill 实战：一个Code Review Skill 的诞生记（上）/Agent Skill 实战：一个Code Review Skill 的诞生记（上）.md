@@ -1,3 +1,10 @@
+---
+title: "Agent Skill 实战：一个Code Review Skill 的诞生记（上）"
+author: "昀启AI+"
+date: "2026-03-25 23:20:57"
+source: "https://mp.weixin.qq.com/s/AriUW68msqAl5MshWlUHRQ"
+---
+
 # Agent Skill 实战：一个Code Review Skill 的诞生记（上）
 
 > 公众号: 昀启AI+

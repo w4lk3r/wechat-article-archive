@@ -1,3 +1,10 @@
+---
+title: "Flutter 官方 Skills：让你的 AI 写出「专家级别」代码"
+author: "Carson带你学Android"
+date: "2026-05-18 08:05:00"
+source: "https://mp.weixin.qq.com/s/S-ZWhQOTwSw9lsJgyz5zkQ"
+---
+
 # Flutter 官方 Skills：让你的 AI 写出「专家级别」代码
 
 > 公众号: Carson带你学Android
